@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Database\Connectors\ConnectionFactory;
+use Illuminate\Database\Connection;
 use Slim\Container;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
@@ -50,4 +52,26 @@ $container['logger'] = function (Container $container) {
     $logger->pushHandler($handler);
 
     return $logger;
+};
+
+$container['db'] = function (Container $container) {
+    $settings = $container->get('settings');
+
+    $config = [
+        'driver' => 'mysql',
+        'host' => $settings['db']['host'],
+        'database' => $settings['db']['database'],
+        'username' => $settings['db']['username'],
+        'password' => $settings['db']['password'],
+        'charset'  => $settings['db']['charset'],
+        'collation' => $settings['db']['collation'],
+    ];
+
+    $factory = new ConnectionFactory(new \Illuminate\Container\Container());
+
+    return $factory->make($config);
+};
+
+$container['pdo'] = function (Container $container) {
+    return $container->get('db')->getPdo();
 };
